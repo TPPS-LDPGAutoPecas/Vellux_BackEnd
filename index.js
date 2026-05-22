@@ -1,6 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const usuarioRoutes = require('./routes/usuarioRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 app.use(cors());
@@ -12,8 +13,8 @@ app.get('/', (req, res) => {
   res.send('Backend da Vellux Motors rodando com sucesso!');
 });
 
-// Registrando as rotas
-app.use('/api', usuarioRoutes);
+// Registrando as rotas de autenticacao
+app.use('/api/auth', authRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
