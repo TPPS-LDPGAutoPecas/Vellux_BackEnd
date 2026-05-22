@@ -1,0 +1,106 @@
+1. users (Usuários: Clientes, Mecânicos e Admins)
+Centraliza todo mundo que interage com o sistema.
+
+id (PK - UUID)
+email (String, Unique)
+displayName (String)
+role (Enum: 'admin', 'mechanic', 'client')
+phoneNumber (String, nullable)
+photoURL (String, nullable)
+createdAt (Timestamp)
+Relacionamentos: 1:N com vehicles, 1:N com appointments, 1:N com services (tanto como dono do veículo quanto como mecânico trabalhando nele).
+
+2. vehicles (Veículos dos Clientes)
+Armazena a garagem dos clientes.
+
+id (PK - UUID)
+ownerId (FK -> users.id)
+make (String - ex: Ferrari)
+model (String - ex: 488 Pista)
+year (Int)
+plate (String)
+color (String)
+vin (String - Chassi, nullable)
+lastMaintenance (Timestamp, nullable)
+Relacionamentos: N:1 com users (Muitos carros para 1 dono), 1:N com services.
+
+3. appointments (Agendamentos da Oficina)
+Vem diretamente da tela de "Agendamento / Calendário".
+
+id (PK - UUID)
+clientId (FK -> users.id)
+vehicleId (FK -> vehicles.id)
+date (Timestamp) - Janela/Dia escolhido
+serviceType (String) - Ex: Revisão, Performance
+status (Enum: 'requested', 'confirmed', 'cancelled', 'completed')
+notes (Text, nullable)
+Relacionamentos: Quando um Agendamento é Aprovado na tela Admin, ele gera/converte-se num registro na tabela services.
+
+4. services (Ordens de Serviço - OS)
+O coração da operação da Vellux. Modela os serviços ativos e o histórico técnico.
+
+id (PK - UUID)
+vehicleId (FK -> vehicles.id)
+clientId (FK -> users.id)
+title (String)
+description (Text)
+status (Enum: 'pending', 'in_progress', 'awaiting_parts', 'completed', 'cancelled')
+budget (Decimal) - Custo atualizado/estimado
+scheduledDate (Timestamp)
+startDate (Timestamp, nullable)
+endDate (Timestamp, nullable)
+evaluationRating (Int, nullable) - Estrelas dadas pelo cliente (1~5)
+evaluationComment (Text, nullable)
+Relacionamentos: 1:N com service_logs, 1:1 com technical_reports.
+
+5. service_mechanics (Equipe Alocada - Tabela de Junção N:M)
+Permite que mais de um mecânico (Ex: "Marcos" e "Andre") participe da mesma OS.
+
+serviceId (FK -> services.id)
+mechanicId (FK -> users.id)
+6. service_logs (Histórico de Transparência da OS)
+Aqui é salva cada linha daquele "Log de Transparência Técnica" (desmontagem, calibração, etc.) mostrado no card do cliente.
+
+id (PK - UUID)
+serviceId (FK -> services.id)
+authorId (FK -> users.id) - Quem anotou (mecânico ou sistema)
+status (Enum) - Status da OS na hora do log
+message (String) - Ex: "Calibração de amortecedores em andamento"
+timestamp (Timestamp)
+7. technical_reports (Checklist e Relatórios de Fechamento)
+Onde são armazenadas as avaliações ricas do carro e o resumo financeiro final.
+
+id (PK - UUID)
+serviceId (FK -> services.id, Unique)
+diagnostics (Text)
+recommendations (Text)
+observations (Text)
+finalValue (Decimal)
+createdAt (Timestamp)
+8. spare_parts (Peças Trocadas/Itens Orçados)
+Detalha as peças originais aguardando fornecedor ou já aplicadas ao carro, atrelado ao relatório técnico de finalização da OS.
+
+id (PK - UUID)
+reportId (FK -> technical_reports.id) ou serviceId direto
+name (String) - Ex: Pastilha de freio em cerâmica
+code (String) - Part Number (PN)
+brand (String) - Marca original/Aftermarket
+quantity (Int)
+unitPrice (Decimal)
+9. notifications (Avisos de Atualização)
+Sistema de sininho que pulsa sempre que há novidades para o cliente ou para a administração da oficina.
+
+id (PK - UUID)
+userId (FK -> users.id)
+title (String)
+message (Text)
+type (Enum: 'info', 'alert', 'success')
+read (Boolean - default false)
+date (Timestamp)
+Dinâmica e Integração (Resumo do Fluxo):
+O Cliente cadastra seu carro em vehicles vinculado ao seu user.
+Solicita um horário via dashboard, que escreve em appointments.
+O Admin recebe o appointment e aprova. Ao aprovar, um modelo na tabela services é gerado.
+O service ganha service_logs inseridos pela equipe via tablet, e os mecânicos são atrelados em service_mechanics.
+Durante o processo a peça entra em espera (AWAITING_PARTS).
+Quando o carro finaliza em COMPLETED, o sistema encerramento gera o technical_report e lança a notificação ao usuário pedindo pelo Feedback (gravando no evaluationRating do services).

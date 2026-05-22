@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: projeto_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: meubanco
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./create-tables.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: projeto_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://admin:adminpassword@db:5432/meubanco
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
