@@ -1,139 +1,90 @@
--- =========================
--- TABELA: USUARIO
--- =========================
-CREATE TABLE IF NOT EXISTS usuario (
-    id_usuario SERIAL PRIMARY KEY,
-    nome VARCHAR(150) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    senha VARCHAR(255) NOT NULL,
-    tipo_usuario VARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('ADMIN', 'CLIENTE', 'MECANICO')),
-    ativo BOOLEAN DEFAULT TRUE
+-- Habilitar a extensão UUID
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Enums
+CREATE TYPE user_role AS ENUM ('admin', 'mechanic', 'client');
+CREATE TYPE appointment_status AS ENUM ('pending', 'accepted', 'rejected');
+CREATE TYPE service_status AS ENUM ('queued', 'in_progress', 'completed');
+
+-- 1. Users
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    display_name VARCHAR(150) NOT NULL,
+    role user_role NOT NULL,
+    phone_number VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =========================
--- TABELA: VEICULO
--- =========================
-CREATE TABLE IF NOT EXISTS veiculo (
-    id_veiculo SERIAL PRIMARY KEY,
-    marca VARCHAR(100),
-    modelo VARCHAR(100),
-    ano INT,
-    placa VARCHAR(10) UNIQUE,
-    id_cliente INT NOT NULL,
-    CONSTRAINT fk_veiculo_cliente
-        FOREIGN KEY (id_cliente) REFERENCES usuario(id_usuario)
-        ON DELETE CASCADE
+-- 2. Vehicles
+CREATE TABLE vehicles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    make VARCHAR(100),
+    model VARCHAR(100) NOT NULL,
+    year INT,
+    plate VARCHAR(20) UNIQUE,
+    color VARCHAR(50),
+    vin VARCHAR(100) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =========================
--- TABELA: SERVICO
--- =========================
-CREATE TABLE IF NOT EXISTS servico (
-    id_servico SERIAL PRIMARY KEY,
-    nome VARCHAR(150) NOT NULL,
-    descricao TEXT,
-    preco_base NUMERIC(10,2),
-    ativo BOOLEAN DEFAULT TRUE
+-- 3. Appointments
+CREATE TABLE appointments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    scheduled_date TIMESTAMP NOT NULL,
+    car_model_info VARCHAR(150) NOT NULL,
+    google_calendar_id VARCHAR(255),
+    status appointment_status DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =========================
--- TABELA: AGENDAMENTO
--- =========================
-CREATE TABLE IF NOT EXISTS agendamento (
-    id_agendamento SERIAL PRIMARY KEY,
-    data_hora TIMESTAMP NOT NULL,
-    status VARCHAR(50),
-    id_cliente INT NOT NULL,
-    id_veiculo INT NOT NULL,
-    CONSTRAINT fk_agendamento_cliente
-        FOREIGN KEY (id_cliente) REFERENCES usuario(id_usuario),
-    CONSTRAINT fk_agendamento_veiculo
-        FOREIGN KEY (id_veiculo) REFERENCES veiculo(id_veiculo)
+-- 4. Services (OS / Check-in)
+CREATE TABLE services (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id UUID NOT NULL REFERENCES users(id),
+    vehicle_id UUID NOT NULL REFERENCES vehicles(id),
+    appointment_id UUID REFERENCES appointments(id),
+    status service_status DEFAULT 'queued',
+    evaluation_rating INT CHECK (evaluation_rating >= 1 AND evaluation_rating <= 5),
+    evaluation_comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    finished_at TIMESTAMP
 );
 
--- =========================
--- TABELA: ORDEM_SERVICO
--- =========================
-CREATE TABLE IF NOT EXISTS ordem_servico (
-    id_ordem SERIAL PRIMARY KEY,
-    status VARCHAR(50),
-    data_inicio TIMESTAMP,
-    data_fim TIMESTAMP,
-    id_agendamento INT UNIQUE,
-    id_mecanico INT,
-    CONSTRAINT fk_ordem_agendamento
-        FOREIGN KEY (id_agendamento) REFERENCES agendamento(id_agendamento),
-    CONSTRAINT fk_ordem_mecanico
-        FOREIGN KEY (id_mecanico) REFERENCES usuario(id_usuario)
+-- 5. Service Mechanics (Atribuição)
+CREATE TABLE service_mechanics (
+    service_id UUID NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    mechanic_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (service_id, mechanic_id)
 );
 
--- =========================
--- TABELA: ORCAMENTO
--- =========================
-CREATE TABLE IF NOT EXISTS orcamento (
-    id_orcamento SERIAL PRIMARY KEY,
-    valor_total NUMERIC(10,2),
-    data_emissao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    aprovado BOOLEAN,
-    id_ordem INT NOT NULL,
-    CONSTRAINT fk_orcamento_ordem
-        FOREIGN KEY (id_ordem) REFERENCES ordem_servico(id_ordem)
-        ON DELETE CASCADE
+-- 6. Service Logs (Tempo Real)
+CREATE TABLE service_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    service_id UUID NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    mechanic_id UUID NOT NULL REFERENCES users(id),
+    description TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =========================
--- TABELA: ITEM_SERVICO (N:N)
--- =========================
-CREATE TABLE IF NOT EXISTS item_servico (
-    id_item SERIAL PRIMARY KEY,
-    id_ordem INT NOT NULL,
-    id_servico INT NOT NULL,
-    quantidade INT DEFAULT 1,
-    valor NUMERIC(10,2),
-    CONSTRAINT fk_item_ordem
-        FOREIGN KEY (id_ordem) REFERENCES ordem_servico(id_ordem)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_item_servico
-        FOREIGN KEY (id_servico) REFERENCES servico(id_servico)
+-- 7. Service Checkouts (Finalização)
+CREATE TABLE service_checkouts (
+    service_id UUID PRIMARY KEY REFERENCES services(id) ON DELETE CASCADE,
+    service_type VARCHAR(150) NOT NULL,
+    summary TEXT NOT NULL,
+    methodology TEXT NOT NULL,
+    total_value DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =========================
--- TABELA: NOTIFICACAO
--- =========================
-CREATE TABLE IF NOT EXISTS notificacao (
-    id_notificacao SERIAL PRIMARY KEY,
-    mensagem TEXT,
-    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    lida BOOLEAN DEFAULT FALSE,
-    id_usuario INT NOT NULL,
-    CONSTRAINT fk_notificacao_usuario
-        FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
-        ON DELETE CASCADE
-);
-
--- =========================
--- TABELA: AVALIACAO
--- =========================
-CREATE TABLE IF NOT EXISTS avaliacao (
-    id_avaliacao SERIAL PRIMARY KEY,
-    nota INT CHECK (nota BETWEEN 1 AND 5),
-    comentario TEXT,
-    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    id_cliente INT NOT NULL,
-    id_ordem INT NOT NULL,
-    CONSTRAINT fk_avaliacao_cliente
-        FOREIGN KEY (id_cliente) REFERENCES usuario(id_usuario),
-    CONSTRAINT fk_avaliacao_ordem
-        FOREIGN KEY (id_ordem) REFERENCES ordem_servico(id_ordem)
-        ON DELETE CASCADE
-);
-
--- =========================
--- TABELA: CONFIGURACAO
--- =========================
-CREATE TABLE IF NOT EXISTS configuracao (
-    id_config SERIAL PRIMARY KEY,
-    chave VARCHAR(100) UNIQUE NOT NULL,
-    valor TEXT,
-    descricao TEXT
+-- 8. Spare Parts (Peças Trocadas)
+CREATE TABLE spare_parts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    service_id UUID NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    unit_price DECIMAL(10, 2) NOT NULL
 );

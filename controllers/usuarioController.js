@@ -1,25 +1,23 @@
 const usuarioModel = require('../models/usuarioModel');
 
 const registrarUsuario = async (req, res) => {
-  const { nome, email, senha, tipo_usuario } = req.body;
+  const { display_name, email, password, role } = req.body;
 
-  // Validação básica
-  if (!nome || !email || !senha || !tipo_usuario) {
-    return res.status(400).json({ erro: 'Nome, email, senha e tipo_usuario são obrigatórios.' });
+  if (!display_name || !email || !password || !role) {
+    return res.status(400).json({ erro: 'display_name, email, password e role são obrigatórios.' });
   }
 
-  // Validação do tipo de usuário conforme o CHECK do banco de dados
-  const tiposPermitidos = ['ADMIN', 'CLIENTE', 'MECANICO'];
-  if (!tiposPermitidos.includes(tipo_usuario.toUpperCase())) {
-    return res.status(400).json({ erro: 'Tipo de usuário inválido. Escolha ADMIN, CLIENTE ou MECANICO.' });
+  const tiposPermitidos = ['admin', 'client', 'mechanic'];
+  if (!tiposPermitidos.includes(role.toLowerCase())) {
+    return res.status(400).json({ erro: 'Role de usuário inválida. Escolha admin, client ou mechanic.' });
   }
 
   try {
     const novoUsuario = await usuarioModel.criarUsuario(
-      nome, 
+      display_name, 
       email, 
-      senha, 
-      tipo_usuario.toUpperCase()
+      password, 
+      role.toLowerCase()
     );
     
     res.status(201).json({ 

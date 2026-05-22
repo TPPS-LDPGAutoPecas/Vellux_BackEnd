@@ -1,12 +1,12 @@
 const db = require('../config/db');
 
-const criarUsuario = async (nome, email, senha, tipo_usuario) => {
+const criarUsuario = async (displayName, email, passwordHash, role) => {
   const query = `
-    INSERT INTO usuario (nome, email, senha, tipo_usuario)
+    INSERT INTO users (display_name, email, password_hash, role)
     VALUES ($1, $2, $3, $4)
-    RETURNING id_usuario, nome, email, tipo_usuario, ativo;
+    RETURNING id, display_name, email, role, created_at;
   `;
-  const values = [nome, email, senha, tipo_usuario];
+  const values = [displayName, email, passwordHash, role];
   
   const result = await db.query(query, values);
   return result.rows[0];
