@@ -53,7 +53,7 @@ END $$;
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id BIGSERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(150) NOT NULL,
@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS vehicles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    owner_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     make VARCHAR(100),
     model VARCHAR(100) NOT NULL,
     year INT CHECK (
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     ),
     plate VARCHAR(20) UNIQUE,
     color VARCHAR(50),
-    vin VARCHAR(100) UNIQUE,
+    vin VARCHAR(100) UNIQUE, -- chassi
     last_maintenance TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -88,9 +88,9 @@ CREATE TABLE IF NOT EXISTS vehicles (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS appointments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    vehicle_id UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    client_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vehicle_id BIGSERIAL NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
     scheduled_date TIMESTAMP NOT NULL,
     service_type VARCHAR(150) NOT NULL,
     notes TEXT,
@@ -104,10 +104,10 @@ CREATE TABLE IF NOT EXISTS appointments (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS services (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    vehicle_id UUID NOT NULL REFERENCES vehicles(id),
-    client_id UUID NOT NULL REFERENCES users(id),
-    appointment_id UUID REFERENCES appointments(id),
+    id BIGSERIAL PRIMARY KEY,
+    vehicle_id BIGSERIAL NOT NULL REFERENCES vehicles(id),
+    client_id BIGSERIAL NOT NULL REFERENCES users(id),
+    appointment_id BIGSERIAL REFERENCES appointments(id),
     title VARCHAR(200) NOT NULL,
     description TEXT,
     status service_status DEFAULT 'pending',
@@ -127,8 +127,8 @@ CREATE TABLE IF NOT EXISTS services (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS service_mechanics (
-    service_id UUID NOT NULL REFERENCES services(id) ON DELETE CASCADE,
-    mechanic_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    service_id BIGSERIAL NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    mechanic_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     PRIMARY KEY (service_id, mechanic_id)
 );
 
@@ -137,9 +137,9 @@ CREATE TABLE IF NOT EXISTS service_mechanics (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS service_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    service_id UUID NOT NULL REFERENCES services(id) ON DELETE CASCADE,
-    mechanic_id UUID NOT NULL REFERENCES users(id),
+    id BIGSERIAL PRIMARY KEY,
+    service_id BIGSERIAL NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    mechanic_id BIGSERIAL NOT NULL REFERENCES users(id),
     status service_status NOT NULL,
     description TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS service_logs (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS technical_reports (
-    service_id UUID PRIMARY KEY
+    service_id BIGSERIAL PRIMARY KEY
         REFERENCES services(id) ON DELETE CASCADE,
     service_name VARCHAR(150) NOT NULL,
     procedures JSONB NOT NULL,
@@ -166,8 +166,8 @@ CREATE TABLE IF NOT EXISTS technical_reports (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS spare_parts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    report_id UUID NOT NULL
+    id BIGSERIAL PRIMARY KEY,
+    report_id BIGSERIAL NOT NULL
         REFERENCES technical_reports(service_id)
         ON DELETE CASCADE,
     name VARCHAR(150) NOT NULL,
@@ -182,8 +182,8 @@ CREATE TABLE IF NOT EXISTS spare_parts (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(200) NOT NULL,
     message TEXT NOT NULL,
     type notification_type DEFAULT 'info',
