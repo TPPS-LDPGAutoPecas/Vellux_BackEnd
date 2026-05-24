@@ -13,7 +13,8 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./create-tables.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./01-create-tables.sql:/docker-entrypoint-initdb.d/01-create-tables.sql
+      - ./02-insert-inicial.sql:/docker-entrypoint-initdb.d/02-insert-inicial.sql
 
   backend:
     build:
