@@ -1,13 +1,9 @@
--- =====================================================
 -- VELLUX MOTORS DATABASE
 -- PostgreSQL
--- =====================================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- =====================================================
 -- ENUMS
--- =====================================================
 
 DO $$ BEGIN
     CREATE TYPE user_role AS ENUM ('admin', 'mechanic', 'client');
@@ -48,9 +44,7 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
--- =====================================================
 -- 1. USERS
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
@@ -63,13 +57,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
 -- 2. VEHICLES
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS vehicles (
     id BIGSERIAL PRIMARY KEY,
-    owner_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    owner_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     make VARCHAR(100),
     model VARCHAR(100) NOT NULL,
     year INT CHECK (
@@ -83,14 +75,12 @@ CREATE TABLE IF NOT EXISTS vehicles (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
 -- 3. APPOINTMENTS
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS appointments (
     id BIGSERIAL PRIMARY KEY,
-    client_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    vehicle_id BIGSERIAL NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    client_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vehicle_id BIGINT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
     scheduled_date TIMESTAMP NOT NULL,
     service_type VARCHAR(150) NOT NULL,
     notes TEXT,
@@ -99,15 +89,13 @@ CREATE TABLE IF NOT EXISTS appointments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
 -- 4. SERVICES
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS services (
     id BIGSERIAL PRIMARY KEY,
-    vehicle_id BIGSERIAL NOT NULL REFERENCES vehicles(id),
-    client_id BIGSERIAL NOT NULL REFERENCES users(id),
-    appointment_id BIGSERIAL REFERENCES appointments(id),
+    vehicle_id BIGINT NOT NULL REFERENCES vehicles(id),
+    client_id BIGINT NOT NULL REFERENCES users(id),
+    appointment_id BIGINT REFERENCES appointments(id),
     title VARCHAR(200) NOT NULL,
     description TEXT,
     status service_status DEFAULT 'pending',
@@ -122,35 +110,29 @@ CREATE TABLE IF NOT EXISTS services (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
 -- 5. SERVICE MECHANICS
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS service_mechanics (
-    service_id BIGSERIAL NOT NULL REFERENCES services(id) ON DELETE CASCADE,
-    mechanic_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    service_id BIGINT NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    mechanic_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     PRIMARY KEY (service_id, mechanic_id)
 );
 
--- =====================================================
 -- 6. SERVICE LOGS
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS service_logs (
     id BIGSERIAL PRIMARY KEY,
-    service_id BIGSERIAL NOT NULL REFERENCES services(id) ON DELETE CASCADE,
-    mechanic_id BIGSERIAL NOT NULL REFERENCES users(id),
+    service_id BIGINT NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    mechanic_id BIGINT NOT NULL REFERENCES users(id),
     status service_status NOT NULL,
     description TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
 -- 7. TECHNICAL REPORTS
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS technical_reports (
-    service_id BIGSERIAL PRIMARY KEY
+    service_id BIGINT PRIMARY KEY
         REFERENCES services(id) ON DELETE CASCADE,
     service_name VARCHAR(150) NOT NULL,
     procedures JSONB NOT NULL,
@@ -161,13 +143,11 @@ CREATE TABLE IF NOT EXISTS technical_reports (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
 -- 8. SPARE PARTS
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS spare_parts (
     id BIGSERIAL PRIMARY KEY,
-    report_id BIGSERIAL NOT NULL
+    report_id BIGINT NOT NULL
         REFERENCES technical_reports(service_id)
         ON DELETE CASCADE,
     name VARCHAR(150) NOT NULL,
@@ -177,13 +157,11 @@ CREATE TABLE IF NOT EXISTS spare_parts (
     unit_price DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0)
 );
 
--- =====================================================
 -- 9. NOTIFICATIONS
--- =====================================================
 
 CREATE TABLE IF NOT EXISTS notifications (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(200) NOT NULL,
     message TEXT NOT NULL,
     type notification_type DEFAULT 'info',
@@ -191,9 +169,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
 -- INDEXES
--- =====================================================
 
 CREATE INDEX IF NOT EXISTS idx_users_role
 ON users(role);
