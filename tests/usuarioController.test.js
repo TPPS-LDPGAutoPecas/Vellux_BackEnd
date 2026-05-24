@@ -18,9 +18,9 @@ describe('Testes parametrizados - Autenticação', () => {
   });
 
   test.each([
-    ['Sem nome', { email: 'teste@teste.com', password: '123' }, 400, 'display_name, email e password são obrigatórios.'],
-    ['Sem email', { display_name: 'Teste', password: '123' }, 400, 'display_name, email e password são obrigatórios.'],
-    ['Sem password', { display_name: 'Teste', email: 'teste@teste.com' }, 400, 'display_name, email e password são obrigatórios.']
+    ['Sem nome', { email: 'teste@teste.com', password: '123' }, 400, 'Campos obrigatórios ausentes.'],
+    ['Sem email', { display_name: 'Teste', password: '123' }, 400, 'Campos obrigatórios ausentes.'],
+    ['Sem password', { display_name: 'Teste', email: 'teste@teste.com' }, 400, 'Campos obrigatórios ausentes.']
   ])('Deve falhar ao registrar (Cadastro Cliente Público) - Caso: %s', async (descricao, payload, statusEsperado, mensagemEsperada) => {
     const res = await request(app).post('/api/auth/register').send(payload);
     
