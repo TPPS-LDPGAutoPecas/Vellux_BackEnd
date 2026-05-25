@@ -27,7 +27,7 @@ services:
       - PORT=3000
       - DATABASE_URL=postgres://admin:adminpassword@db:5432/meubanco
       - JWT_SECRET=VelluxMotorsSuperSecretKey2024!
-      - GOOGLE_CALENDAR_ID=7e6af3f189b86261309c9333e2f1f61600ec10d3eed24bfe260af52cd7e87a0b@group.calendar.google.com
+      - GOOGLE_CALENDAR_ID=vinicius.flusao@gmail.com
     volumes:
       - .:/app
       - /app/node_modules
