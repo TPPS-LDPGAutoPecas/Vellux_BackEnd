@@ -26,3 +26,6 @@ app.use('/api/auth', authRoutes);
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
+// Rota Goole Calendar - Agendamento de Serviços
+app.use('/api/appointments', require('./routes/agendamentoRoutes'));
