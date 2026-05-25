@@ -6,13 +6,13 @@ TRUNCATE TABLE users RESTART IDENTITY CASCADE;
 
 INSERT INTO users (email, password_hash, display_name, role, phone_number)
 VALUES
-('admin@vellux.com', 'hash_admin_123', 'Administrador Vellux', 'admin', '61999990000'),
-('mecanico1@vellux.com', 'hash_mec_1', 'Carlos Mecânico', 'mechanic', '61999990001'),
-('mecanico2@vellux.com', 'hash_mec_2', 'Fernanda Técnica', 'mechanic', '61999990002'),
-('mecanico3@vellux.com', 'hash_mec_3', 'João Especialista', 'mechanic', '61999990003'),
-('cliente1@email.com', 'hash_cli_1', 'Marcela Souza', 'client', '61999991001'),
-('cliente2@email.com', 'hash_cli_2', 'Lucas Pereira', 'client', '61999991002'),
-('cliente3@email.com', 'hash_cli_3', 'Ana Costa', 'client', '61999991003');
+('admin@vellux.com', '$2b$10$liGIYEqOjIHpfgYzo/sX9uSPqZ4KNHNK/Yo4oYz/HVnHJq484xqW2', 'Administrador Vellux', 'admin', '61999990000'),
+('mecanico1@vellux.com', '$2b$10$liGIYEqOjIHpfgYzo/sX9uSPqZ4KNHNK/Yo4oYz/HVnHJq484xqW2', 'Carlos Mecânico', 'mechanic', '61999990001'),
+('mecanico2@vellux.com', '$2b$10$liGIYEqOjIHpfgYzo/sX9uSPqZ4KNHNK/Yo4oYz/HVnHJq484xqW2', 'Fernanda Técnica', 'mechanic', '61999990002'),
+('mecanico3@vellux.com', '$2b$10$liGIYEqOjIHpfgYzo/sX9uSPqZ4KNHNK/Yo4oYz/HVnHJq484xqW2', 'João Especialista', 'mechanic', '61999990003'),
+('cliente1@email.com', '$2b$10$liGIYEqOjIHpfgYzo/sX9uSPqZ4KNHNK/Yo4oYz/HVnHJq484xqW2', 'Marcela Souza', 'client', '61999991001'),
+('cliente2@email.com', '$2b$10$liGIYEqOjIHpfgYzo/sX9uSPqZ4KNHNK/Yo4oYz/HVnHJq484xqW2', 'Lucas Pereira', 'client', '61999991002'),
+('cliente3@email.com', '$2b$10$liGIYEqOjIHpfgYzo/sX9uSPqZ4KNHNK/Yo4oYz/HVnHJq484xqW2', 'Ana Costa', 'client', '61999991003');
 
 -- =====================================================
 -- INSERT VEHICLES
