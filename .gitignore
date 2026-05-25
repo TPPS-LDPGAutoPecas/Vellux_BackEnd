@@ -123,4 +123,4 @@ dist
 *.sw?
 
 # Google Credentials file
-#config/google-credentials.json
+config/google-credentials.json
