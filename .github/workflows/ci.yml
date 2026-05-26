@@ -15,7 +15,7 @@ jobs:
         node-version: [18.x, 20.x, 22.x]
 
     steps:
-      - name: 🛎️ Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
@@ -24,17 +24,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: 🛡️ Check Vulnerabilities (Audit)
+      - name: Check Vulnerabilities (Audit)
         run: npm audit --audit-level=high
         continue-on-error: true # Evita falhar o pipeline inteiro só por dependências antigas
 
-      - name: 🧪 Run Unit Tests with Coverage
+      - name: Run Unit Tests with Coverage
         run: npx jest --coverage
 
-      - name: 📤 Upload Coverage Report
+      - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         if: always() # Garante o upload mesmo se um teste falhar
         with:
