@@ -106,7 +106,7 @@ describe('Testes parametrizados - Agendamentos', () => {
       const res = await request(app).delete('/api/appointments/1');
 
       expect(res.status).toBe(200);
-      expect(res.body.mensagem).toBe('Agendamento cancelado com sucesso nas duas plataformas.');
+      expect(res.body.mensagem).toBe('Agendamento cancelado com sucesso.');
       expect(AgendamentoModel.buscarPorId).toHaveBeenCalledWith('1');
       expect(GoogleCalendarService.cancelarAgendamento).toHaveBeenCalledWith('google_id_123');
       expect(AgendamentoModel.deletarAgendamento).toHaveBeenCalledWith('1');
@@ -122,7 +122,7 @@ describe('Testes parametrizados - Agendamentos', () => {
       const res = await request(app).delete('/api/appointments/1');
 
       expect(res.status).toBe(200);
-      expect(res.body.mensagem).toBe('Agendamento cancelado com sucesso nas duas plataformas.');
+      expect(res.body.mensagem).toBe('Agendamento cancelado com sucesso.');
       expect(GoogleCalendarService.cancelarAgendamento).toHaveBeenCalledWith('google_id_123');
       expect(AgendamentoModel.deletarAgendamento).toHaveBeenCalledWith('1');
     });

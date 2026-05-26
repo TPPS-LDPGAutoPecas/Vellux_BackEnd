@@ -40,7 +40,7 @@ const AuthMiddleware = require('../middlewares/authMiddleware');
  *                 example: "Por favor, checar barulho estranho na roda direita "
  *     responses:
  *       201:
- *         description: Agendamento confirmed com sucesso
+ *         description: Agendamento confirmado com sucesso
  *       400:
  *         description: Todos os campos são obrigatórios
  *       500:
@@ -65,7 +65,7 @@ router.post('/', AuthMiddleware.verificarAcesso(['client', 'admin']), Agendament
  *         description: O ID do agendamento a ser cancelado
  *     responses:
  *       200:
- *         description: Agendamento cancelado com sucesso nas duas plataformas 
+ *         description: Agendamento cancelado com sucesso 
  *       403:
  *         description: Não tem permissão para cancelar este agendamento
  *       404:

@@ -85,7 +85,7 @@ class AgendamentoController {
       await AgendamentoModel.deletarAgendamento(id);
       console.log(`[DEBUG] Sucesso! Agendamento ${id} apagado nas duas plataformas.\n`);
 
-      return res.status(200).json({ mensagem: 'Agendamento cancelado com sucesso nas duas plataformas.' });
+      return res.status(200).json({ mensagem: 'Agendamento cancelado com sucesso.' });
 
     } catch (error) {
       console.error('[ERRO CANCELAR]', error);
