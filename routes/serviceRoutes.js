@@ -103,4 +103,18 @@ router.post('/:id/assign', AuthMiddleware.verificarAcesso(['admin']), ServiceCon
  */
 router.post('/:id/finish', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), ServiceController.finalizarServico);
 
+/**
+ * @swagger
+ * /api/services/{id}/evaluate:
+ *   post:
+ *     summary: Avalia o serviço
+ *     tags: [Serviços]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Avaliação salva
+ */
+router.post('/:id/evaluate', AuthMiddleware.verificarAcesso(['client']), ServiceController.avaliarServico);
+
 module.exports = router;

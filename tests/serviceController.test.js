@@ -123,5 +123,25 @@ describe('Testes - Serviços', () => {
       expect(res.status).toBe(400);
       expect(res.body.erro).toBe('Nome do serviço e valor final são obrigatórios para o laudo.');
     });
+
+    test('POST /api/services/:id/evaluate - Deve avaliar o servico', async () => {
+      mockUser = { id: 1, role: 'client' }; // override role for this test
+      const payload = { rating: 5, comment: 'Bom' };
+      ServiceModel.avaliarServico.mockResolvedValue(true);
+
+      const res = await request(app).post('/api/services/1/evaluate').send(payload);
+
+      expect(res.status).toBe(200);
+      expect(res.body.mensagem).toBe('Avaliação enviada com sucesso!');
+      expect(ServiceModel.avaliarServico).toHaveBeenCalledWith('1', 1, 5, 'Bom');
+    });
+
+    test('POST /api/services/:id/evaluate - Deve falhar sem nota', async () => {
+      mockUser = { id: 1, role: 'client' }; 
+      const res = await request(app).post('/api/services/1/evaluate').send({ comment: 'Bom' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.erro).toBe('Nota de avaliação é obrigatória.');
+    });
   });
 });

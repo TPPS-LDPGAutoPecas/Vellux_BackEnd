@@ -218,6 +218,24 @@ class ServiceModel {
       client.release();
     }
   }
+
+  static async avaliarServico(serviceId, clientId, rating, comment) {
+    const check = await db.query(`SELECT id FROM services WHERE id = $1 AND client_id = $2 AND status = 'completed'`, [serviceId, clientId]);
+    if (check.rows.length === 0) {
+      throw new Error('Serviço não encontrado, não pertence ao cliente, ou não está concluído.');
+    }
+
+    if (!rating || rating < 1 || rating > 5) {
+      throw new Error('Nota de avaliação inválida.');
+    }
+
+    await db.query(`
+      UPDATE services
+      SET evaluation_rating = $1, evaluation_comment = $2
+      WHERE id = $3
+    `, [rating, comment || null, serviceId]);
+    return true;
+  }
 }
 
 module.exports = ServiceModel;

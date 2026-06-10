@@ -96,6 +96,24 @@ class ServiceController {
       return res.status(500).json({ erro: 'Erro interno ao finalizar o serviço' });
     }
   }
+
+  static async avaliarServico(req, res) {
+    try {
+      const { id } = req.params;
+      const clientId = req.usuarioLogado.id;
+      const { rating, comment } = req.body;
+
+      if (!rating) {
+        return res.status(400).json({ erro: 'Nota de avaliação é obrigatória.' });
+      }
+
+      await ServiceModel.avaliarServico(id, clientId, rating, comment);
+      return res.status(200).json({ mensagem: 'Avaliação enviada com sucesso!' });
+    } catch (err) {
+      console.error('Erro ao avaliar serviço:', err);
+      return res.status(500).json({ erro: err.message || 'Erro interno ao avaliar o serviço' });
+    }
+  }
 }
 
 module.exports = ServiceController;

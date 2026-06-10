@@ -106,9 +106,7 @@ CREATE TABLE IF NOT EXISTS services (
     expected_delivery TIMESTAMP,
     finished_at TIMESTAMP,
     budget DECIMAL(10,2),
-    evaluation_rating INT CHECK (
-        evaluation_rating BETWEEN 1 AND 5
-    ),
+    evaluation_rating INT CHECK (evaluation_rating BETWEEN 1 AND 5),
     evaluation_comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
