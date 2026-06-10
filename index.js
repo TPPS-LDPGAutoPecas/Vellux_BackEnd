@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
+const vehicleRoutes = require('./routes/vehicleRoutes');
+const serviceRoutes = require('./routes/serviceRoutes');
 
 // Importações do Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -29,3 +31,6 @@ app.listen(PORT, () => {
 
 // Rota Goole Calendar - Agendamento de Serviços
 app.use('/api/appointments', require('./routes/agendamentoRoutes'));
+
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/services', serviceRoutes);
