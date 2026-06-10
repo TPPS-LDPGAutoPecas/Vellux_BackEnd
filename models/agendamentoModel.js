@@ -37,6 +37,24 @@ class AgendamentoModel {
     const result = await db.query(query, [parseInt(id, 10)]);
     return result.rows[0];
   }
+
+  static async listarPendentesAdmin() {
+    const query = `
+      SELECT 
+        a.id, 
+        u.display_name as client, 
+        v.make || ' ' || v.model as car, 
+        v.plate, 
+        a.scheduled_date as date
+      FROM appointments a
+      JOIN users u ON a.client_id = u.id
+      JOIN vehicles v ON a.vehicle_id = v.id
+      WHERE a.id NOT IN (SELECT appointment_id FROM services WHERE appointment_id IS NOT NULL)
+      ORDER BY a.scheduled_date ASC;
+    `;
+    const result = await db.query(query);
+    return result.rows;
+  }
 }
 
 module.exports = AgendamentoModel;

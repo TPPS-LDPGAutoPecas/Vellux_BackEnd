@@ -95,6 +95,21 @@ class UsuarioController {
       return res.status(500).json({ erro: 'Erro interno no servidor.', detalhes: error.message });
     }
   }
+
+  /**
+   * Lista todos os usuários cadastrados como mecânicos.
+   * @param {Object} req Objeto de requisição do Express.
+   * @param {Object} res Objeto de resposta do Express.
+   */
+  static async listarMecanicos(req, res) {
+    try {
+      const mecanicos = await UsuarioModel.buscarMecanicos();
+      return res.status(200).json(mecanicos);
+    } catch (error) {
+      console.error('Erro ao listar mecânicos:', error);
+      return res.status(500).json({ erro: 'Erro interno ao listar mecânicos.' });
+    }
+  }
 }
 
 module.exports = UsuarioController;

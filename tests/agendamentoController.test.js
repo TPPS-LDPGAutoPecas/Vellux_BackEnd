@@ -128,4 +128,28 @@ describe('Testes parametrizados - Agendamentos', () => {
     });
   });
 
+  describe('GET /api/appointments/admin/pendentes - Listar Agendamentos Recentes (Admin)', () => {
+    test('Deve retornar 200 e a lista de agendamentos pendentes', async () => {
+      const mockAgendamentos = [
+        { id: 1, client: 'Beto', car: 'Porsche', plate: 'PR-911', date: '2026-05-15T10:00:00.000Z' }
+      ];
+      AgendamentoModel.listarPendentesAdmin.mockResolvedValue(mockAgendamentos);
+
+      const res = await request(app).get('/api/appointments/admin/pendentes');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(mockAgendamentos);
+      expect(AgendamentoModel.listarPendentesAdmin).toHaveBeenCalled();
+    });
+
+    test('Deve retornar 500 se ocorrer erro no model', async () => {
+      AgendamentoModel.listarPendentesAdmin.mockRejectedValue(new Error('DB Error'));
+
+      const res = await request(app).get('/api/appointments/admin/pendentes');
+
+      expect(res.status).toBe(500);
+      expect(res.body.erro).toBe('Erro interno ao listar agendamentos pendentes.');
+    });
+  });
+
 });

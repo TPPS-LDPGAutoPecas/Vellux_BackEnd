@@ -75,4 +75,20 @@ router.post('/', AuthMiddleware.verificarAcesso(['client', 'admin']), Agendament
  */
 router.delete('/:id', AuthMiddleware.verificarAcesso(['client', 'admin']), AgendamentoController.cancelarServico);
 
+/**
+ * @swagger
+ * /api/appointments/admin/pendentes:
+ *   get:
+ *     summary: Lista agendamentos recentes que não viraram serviço ainda
+ *     tags: [Agendamentos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de agendamentos pendentes
+ *       401:
+ *         description: Não autorizado
+ */
+router.get('/admin/pendentes', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), AgendamentoController.listarPendentesAdmin);
+
 module.exports = router;

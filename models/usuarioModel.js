@@ -38,6 +38,21 @@ class UsuarioModel {
     const result = await db.query(query, [email]);
     return result.rows[0];
   }
+
+  /**
+   * Busca todos os usuários com papel 'mechanic'.
+   * @returns {Promise<Array>} Retorna um array com os mecânicos encontrados.
+   */
+  static async buscarMecanicos() {
+    const query = `
+      SELECT id, display_name, email 
+      FROM users
+      WHERE role = 'mechanic'
+      ORDER BY display_name ASC;
+    `;
+    const result = await db.query(query);
+    return result.rows;
+  }
 }
 
 module.exports = UsuarioModel;

@@ -92,6 +92,16 @@ class AgendamentoController {
       return res.status(500).json({ erro: 'Erro interno ao cancelar o agendamento.' });
     }
   }
+
+  static async listarPendentesAdmin(req, res) {
+    try {
+      const pendentes = await AgendamentoModel.listarPendentesAdmin();
+      return res.status(200).json(pendentes);
+    } catch (error) {
+      console.error('[ERRO LISTAR PENDENTES ADMIN]', error);
+      return res.status(500).json({ erro: 'Erro interno ao listar agendamentos pendentes.' });
+    }
+  }
 }
 
 module.exports = AgendamentoController;

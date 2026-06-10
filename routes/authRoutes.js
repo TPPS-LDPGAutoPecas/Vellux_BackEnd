@@ -82,4 +82,20 @@ router.post('/register', UsuarioController.registrarUsuario);
  */
 router.post('/login', UsuarioController.login);
 
+/**
+ * @swagger
+ * /api/auth/mechanics:
+ *   get:
+ *     summary: Lista todos os mecânicos
+ *     tags: [Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de mecânicos retornada com sucesso
+ *       401:
+ *         description: Não autorizado
+ */
+router.get('/mechanics', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), UsuarioController.listarMecanicos);
+
 module.exports = router;
