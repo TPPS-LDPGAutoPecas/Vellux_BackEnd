@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS users (
     role user_role NOT NULL,
     phone_number VARCHAR(20),
     photo_url TEXT,
+    specialty VARCHAR(255),
+    team_status VARCHAR(50) DEFAULT 'available',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

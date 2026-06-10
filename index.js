@@ -4,6 +4,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 // Importações do Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -34,3 +35,4 @@ app.use('/api/appointments', require('./routes/agendamentoRoutes'));
 
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/team', teamRoutes);

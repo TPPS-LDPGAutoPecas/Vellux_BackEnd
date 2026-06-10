@@ -37,6 +37,19 @@ class ServiceController {
     }
   }
 
+  static async atualizarServico(req, res) {
+    try {
+      const { id } = req.params;
+      const { title, description } = req.body;
+      
+      const servico = await ServiceModel.atualizarServico(id, title, description);
+      return res.status(200).json({ mensagem: 'Serviço atualizado com sucesso!', servico });
+    } catch (err) {
+      console.error('Erro ao atualizar serviço:', err);
+      return res.status(500).json({ erro: 'Erro interno ao atualizar serviço' });
+    }
+  }
+
   static async iniciarServico(req, res) {
     try {
       const { id } = req.params;

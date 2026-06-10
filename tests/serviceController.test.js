@@ -93,7 +93,7 @@ describe('Testes - Serviços', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.mensagem).toBe('Serviço iniciado com sucesso!');
-      expect(ServiceModel.iniciarServico).toHaveBeenCalledWith('1', 99);
+      expect(ServiceModel.iniciarServico).toHaveBeenCalledWith('1', 99, undefined);
     });
 
     test('POST /api/services/:id/assign - Deve atribuir mecanico', async () => {

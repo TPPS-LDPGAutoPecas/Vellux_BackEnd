@@ -63,6 +63,20 @@ router.post('/:id/start', AuthMiddleware.verificarAcesso(['admin', 'mechanic']),
 
 /**
  * @swagger
+ * /api/services/{id}:
+ *   put:
+ *     summary: Atualiza o escopo de um serviço
+ *     tags: [Serviços]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Serviço atualizado
+ */
+router.put('/:id', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), ServiceController.atualizarServico);
+
+/**
+ * @swagger
  * /api/services/{id}/assign:
  *   post:
  *     summary: Atribui ou remove um mecânico do serviço

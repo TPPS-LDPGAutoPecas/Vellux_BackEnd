@@ -78,7 +78,7 @@ class ServiceModel {
         v.plate,
         s.title as type,
         s.status,
-        TO_CHAR(s.start_date, 'HH24:MI') as "startTime",
+        TO_CHAR(s.start_date, 'DD/MM/YYYY HH24:MI') as "startTime",
         s.description as diagnostics,
         COALESCE((
             SELECT json_agg(u.display_name)
@@ -104,6 +104,19 @@ class ServiceModel {
       RETURNING *;
     `;
     const result = await db.query(query, [appointmentId, title, description]);
+    return result.rows[0];
+  }
+
+  static async atualizarServico(serviceId, title, description) {
+    const query = `
+      UPDATE services 
+      SET title = COALESCE($2, title),
+          description = COALESCE($3, description)
+      WHERE id = $1
+      RETURNING *;
+    `;
+    const result = await db.query(query, [serviceId, title, description]);
+    if (result.rows.length === 0) throw new Error('Serviço não encontrado');
     return result.rows[0];
   }
 
