@@ -105,5 +105,23 @@ describe('Testes - Serviços', () => {
       expect(res.body.mensagem).toBe('Mecânico adicionado com sucesso.');
       expect(ServiceModel.atribuirMecanico).toHaveBeenCalledWith('1', 2);
     });
+
+    test('POST /api/services/:id/finish - Deve finalizar servico com laudo', async () => {
+      const payload = { serviceName: 'Revisão', finalValue: '500.00' };
+      ServiceModel.finalizarServico.mockResolvedValue({ sucesso: true });
+
+      const res = await request(app).post('/api/services/1/finish').send(payload);
+
+      expect(res.status).toBe(200);
+      expect(res.body.mensagem).toBe('Serviço finalizado e laudo técnico emitido com sucesso.');
+      expect(ServiceModel.finalizarServico).toHaveBeenCalledWith('1', 99, payload);
+    });
+
+    test('POST /api/services/:id/finish - Deve falhar sem campos obrigatorios', async () => {
+      const res = await request(app).post('/api/services/1/finish').send({ serviceName: 'Revisão' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.erro).toBe('Nome do serviço e valor final são obrigatórios para o laudo.');
+    });
   });
 });

@@ -41,8 +41,10 @@ class ServiceController {
     try {
       const { id } = req.params;
       const mechanicId = req.usuarioLogado.id;
-      const servicoAtualizado = await ServiceModel.iniciarServico(id, mechanicId);
-      return res.status(200).json({ mensagem: 'Serviço iniciado com sucesso!', servico: servicoAtualizado });
+      const { expectedDelivery } = req.body || {};
+
+      const servico = await ServiceModel.iniciarServico(id, mechanicId, expectedDelivery);
+      return res.status(200).json({ mensagem: 'Serviço iniciado com sucesso!', servico });
     } catch (err) {
       console.error('Erro ao iniciar serviço:', err);
       return res.status(500).json({ erro: 'Erro interno ao iniciar serviço' });
@@ -61,6 +63,24 @@ class ServiceController {
     } catch (err) {
       console.error('Erro ao atribuir mecânico:', err);
       return res.status(500).json({ erro: 'Erro interno ao atribuir mecânico' });
+    }
+  }
+
+  static async finalizarServico(req, res) {
+    try {
+      const { id } = req.params;
+      const mechanicId = req.usuarioLogado.id;
+      const reportData = req.body; // { serviceName, procedures, diagnostics, parts, observations, finalValue }
+
+      if (!reportData.serviceName || !reportData.finalValue) {
+        return res.status(400).json({ erro: 'Nome do serviço e valor final são obrigatórios para o laudo.' });
+      }
+
+      await ServiceModel.finalizarServico(id, mechanicId, reportData);
+      return res.status(200).json({ mensagem: 'Serviço finalizado e laudo técnico emitido com sucesso.' });
+    } catch (err) {
+      console.error('Erro ao finalizar serviço:', err);
+      return res.status(500).json({ erro: 'Erro interno ao finalizar o serviço' });
     }
   }
 }

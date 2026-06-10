@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS services (
     status service_status DEFAULT 'pending',
     scheduled_date TIMESTAMP NOT NULL,
     start_date TIMESTAMP,
+    expected_delivery TIMESTAMP,
     finished_at TIMESTAMP,
     budget DECIMAL(10,2),
     evaluation_rating INT CHECK (

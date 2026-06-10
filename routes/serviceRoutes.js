@@ -75,4 +75,18 @@ router.post('/:id/start', AuthMiddleware.verificarAcesso(['admin', 'mechanic']),
  */
 router.post('/:id/assign', AuthMiddleware.verificarAcesso(['admin']), ServiceController.atribuirMecanico);
 
+/**
+ * @swagger
+ * /api/services/{id}/finish:
+ *   post:
+ *     summary: Finaliza o serviço e emite o laudo técnico
+ *     tags: [Serviços]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Serviço finalizado com sucesso
+ */
+router.post('/:id/finish', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), ServiceController.finalizarServico);
+
 module.exports = router;

@@ -12,6 +12,9 @@ class ServiceModel {
           s.description,
           s.status,
           s.scheduled_date as "scheduledDate",
+          s.start_date as "startDate",
+          s.expected_delivery as "expectedDelivery",
+          s.finished_at as "endDate",
           s.budget,
           COALESCE((
               SELECT json_agg(u.display_name)
@@ -35,7 +38,28 @@ class ServiceModel {
                   'rating', s.evaluation_rating,
                   'comment', s.evaluation_comment
               )
-          ELSE NULL END as evaluation
+          ELSE NULL END as evaluation,
+          (
+              SELECT json_build_object(
+                  'serviceName', tr.service_name,
+                  'procedures', tr.procedures,
+                  'diagnostics', tr.diagnostics,
+                  'recommendations', tr.recommendations,
+                  'observations', tr.observations,
+                  'finalValue', tr.final_value,
+                  'parts', COALESCE((
+                      SELECT json_agg(json_build_object(
+                          'name', sp.name,
+                          'brand', sp.brand,
+                          'quantity', sp.quantity
+                      ))
+                      FROM spare_parts sp
+                      WHERE sp.report_id = tr.service_id
+                  ), '[]'::json)
+              )
+              FROM technical_reports tr
+              WHERE tr.service_id = s.id
+          ) as report
       FROM services s
       JOIN vehicles v ON v.id = s.vehicle_id
       WHERE s.client_id = $1
@@ -83,24 +107,23 @@ class ServiceModel {
     return result.rows[0];
   }
 
-  static async iniciarServico(serviceId, mechanicId) {
-    // 1. Atualizar status e data
-    const queryUpdate = `
-      UPDATE services 
-      SET status = 'in_progress', start_date = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *;
-    `;
-    const resUpdate = await db.query(queryUpdate, [serviceId]);
-    
-    // 2. Criar log
-    const queryLog = `
-      INSERT INTO service_logs (service_id, mechanic_id, status, description)
-      VALUES ($1, $2, 'in_progress', 'Execução Técnica Iniciada')
-    `;
-    await db.query(queryLog, [serviceId, mechanicId]);
+  static async iniciarServico(serviceId, mechanicId, expectedDelivery = null) {
+    const check = await db.query(`SELECT status FROM services WHERE id = $1`, [serviceId]);
+    if (check.rows.length === 0) throw new Error('Serviço não encontrado');
+    if (check.rows[0].status !== 'pending') throw new Error('Serviço não está pendente');
 
-    return resUpdate.rows[0];
+    const result = await db.query(
+      `UPDATE services SET status = 'in_progress', start_date = CURRENT_TIMESTAMP, expected_delivery = $1 WHERE id = $2 RETURNING *`,
+      [expectedDelivery || null, serviceId]
+    );
+
+    // Adiciona log
+    await db.query(
+      `INSERT INTO service_logs (service_id, mechanic_id, status, description) VALUES ($1, $2, 'in_progress', 'Serviço Iniciado')`,
+      [serviceId, mechanicId]
+    );
+
+    return result.rows[0];
   }
 
   static async atribuirMecanico(serviceId, mechanicId) {
@@ -116,6 +139,70 @@ class ServiceModel {
       // Se não existe, insere
       await db.query(`INSERT INTO service_mechanics (service_id, mechanic_id) VALUES ($1, $2)`, [serviceId, mechanicId]);
       return { action: 'added' };
+    }
+  }
+
+  static async finalizarServico(serviceId, mechanicId, reportData) {
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+
+      // 1. Atualizar o serviço
+      const queryUpdate = `
+        UPDATE services
+        SET status = 'completed', finished_at = CURRENT_TIMESTAMP, budget = $1
+        WHERE id = $2
+        RETURNING *;
+      `;
+      await client.query(queryUpdate, [reportData.finalValue, serviceId]);
+
+      // 2. Inserir o Laudo
+      const queryReport = `
+        INSERT INTO technical_reports (service_id, service_name, procedures, diagnostics, observations, final_value)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *;
+      `;
+      await client.query(queryReport, [
+        serviceId,
+        reportData.serviceName,
+        JSON.stringify(reportData.procedures || []),
+        reportData.diagnostics,
+        reportData.observations,
+        reportData.finalValue
+      ]);
+
+      // 3. Inserir peças
+      if (reportData.parts && reportData.parts.length > 0) {
+        for (const part of reportData.parts) {
+          if (part.name) {
+            const queryPart = `
+              INSERT INTO spare_parts (report_id, name, brand, quantity, unit_price)
+              VALUES ($1, $2, $3, $4, 0.00)
+            `;
+            await client.query(queryPart, [
+              serviceId,
+              part.name,
+              part.brand,
+              parseInt(part.qty) || 1
+            ]);
+          }
+        }
+      }
+
+      // 4. Inserir Log
+      const queryLog = `
+        INSERT INTO service_logs (service_id, mechanic_id, status, description)
+        VALUES ($1, $2, 'completed', 'Serviço Finalizado. Laudo Emitido.')
+      `;
+      await client.query(queryLog, [serviceId, mechanicId]);
+
+      await client.query('COMMIT');
+      return { sucesso: true };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
   }
 }
