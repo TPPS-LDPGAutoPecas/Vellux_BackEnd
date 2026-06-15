@@ -1,11 +1,19 @@
 const db = require('../config/db');
 
 class FinanceModel {
-  static async getDashboardMetrics(range) {
+  static async getDashboardMetrics(range, startDate, endDate) {
     let dateFilter = '';
     
     // Simplification for range filter logic
-    if (range === 'week') {
+    if (range === 'custom' && startDate && endDate) {
+      // Validate dates to prevent SQL Injection
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (dateRegex.test(startDate) && dateRegex.test(endDate)) {
+        dateFilter = `AND finished_at >= '${startDate} 00:00:00' AND finished_at <= '${endDate} 23:59:59'`;
+      } else {
+        dateFilter = `AND finished_at >= date_trunc('month', CURRENT_DATE)`;
+      }
+    } else if (range === 'week') {
       dateFilter = `AND finished_at >= date_trunc('week', CURRENT_DATE)`;
     } else if (range === 'month') {
       dateFilter = `AND finished_at >= date_trunc('month', CURRENT_DATE)`;
@@ -45,6 +53,12 @@ class FinanceModel {
       let groupByFormat = "to_char(finished_at, 'DD/MM')";
       if (range === 'year') {
         groupByFormat = "to_char(finished_at, 'MM/YYYY')";
+      } else if (range === 'custom' && startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if ((end - start) / (1000 * 60 * 60 * 24) > 60) {
+          groupByFormat = "to_char(finished_at, 'MM/YYYY')";
+        }
       }
       
       const revenueQuery = `

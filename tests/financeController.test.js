@@ -39,7 +39,13 @@ describe('Finance Controller Tests', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(mockMetrics);
-    expect(FinanceModel.getDashboardMetrics).toHaveBeenCalledWith('month');
+    expect(FinanceModel.getDashboardMetrics).toHaveBeenCalledWith('month', undefined, undefined);
+  });
+
+  test('GET /api/finance/dashboard - Deve repassar startDate e endDate', async () => {
+    FinanceModel.getDashboardMetrics.mockResolvedValue({});
+    await request(app).get('/api/finance/dashboard?range=custom&startDate=2026-01-01&endDate=2026-01-31');
+    expect(FinanceModel.getDashboardMetrics).toHaveBeenCalledWith('custom', '2026-01-01', '2026-01-31');
   });
 
   test('GET /api/finance/dashboard - Deve retornar 500 em caso de erro', async () => {

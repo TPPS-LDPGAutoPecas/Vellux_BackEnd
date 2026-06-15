@@ -3,9 +3,9 @@ const FinanceModel = require('../models/financeModel');
 class FinanceController {
   static async getDashboardMetrics(req, res) {
     try {
-      const { range } = req.query; // 'week', 'month', 'quarter', 'year'
+      const { range, startDate, endDate } = req.query; // 'week', 'month', 'quarter', 'year', 'custom'
       
-      const metrics = await FinanceModel.getDashboardMetrics(range);
+      const metrics = await FinanceModel.getDashboardMetrics(range, startDate, endDate);
       
       return res.status(200).json(metrics);
     } catch (err) {
