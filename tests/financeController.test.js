@@ -25,11 +25,12 @@ describe('Finance Controller Tests', () => {
 
   test('GET /api/finance/dashboard - Deve retornar métricas de dashboard financeiro', async () => {
     const mockMetrics = {
-      kpis: { totalRevenue: 10000, totalServices: 10, averageTicket: 1000 },
+      kpis: { totalRevenue: 10000, totalServices: 10, averageTicket: 1000, averageSatisfaction: 4.8, averageRepairTime: 2.5 },
       revenueData: [{ name: '01/01', value: 10000 }],
       serviceMixData: [{ name: 'Troca de Óleo', count: 5, value: 5000 }],
       techPerformanceData: [{ name: 'Mecânico 1', services: 5, revenue: 5000 }],
-      recentTransactions: []
+      recentTransactions: [],
+      timePerServiceData: [{ name: 'Troca de Óleo', avgDays: 1.5 }]
     };
 
     FinanceModel.getDashboardMetrics.mockResolvedValue(mockMetrics);

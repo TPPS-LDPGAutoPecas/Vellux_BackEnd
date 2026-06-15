@@ -24,7 +24,9 @@ class FinanceModel {
         SELECT 
           COALESCE(SUM(budget), 0) AS total_revenue,
           COUNT(id) AS total_services,
-          COALESCE(AVG(budget), 0) AS average_ticket
+          COALESCE(AVG(budget), 0) AS average_ticket,
+          COALESCE(AVG(evaluation_rating), 0) AS average_satisfaction,
+          COALESCE(AVG(EXTRACT(EPOCH FROM (finished_at - start_date))/86400), 0) AS average_repair_time
         FROM services 
         WHERE status = 'completed' ${dateFilter}
       `;
@@ -34,6 +36,8 @@ class FinanceModel {
         totalRevenue: parseFloat(kpisResult.rows[0].total_revenue) || 0,
         totalServices: parseInt(kpisResult.rows[0].total_services) || 0,
         averageTicket: parseFloat(kpisResult.rows[0].average_ticket) || 0,
+        averageSatisfaction: parseFloat(kpisResult.rows[0].average_satisfaction) || 0,
+        averageRepairTime: parseFloat(kpisResult.rows[0].average_repair_time) || 0,
       };
 
       // 2. Revenue Chart (grouped by month or day based on range)
@@ -122,12 +126,30 @@ class FinanceModel {
         value: parseFloat(row.value) || 0
       }));
 
+      // 6. Time per Service Type
+      const timeQuery = `
+        SELECT 
+          title as name, 
+          COALESCE(AVG(EXTRACT(EPOCH FROM (finished_at - start_date))/86400), 0) as avg_days
+        FROM services
+        WHERE status = 'completed' ${dateFilter} AND start_date IS NOT NULL AND finished_at IS NOT NULL
+        GROUP BY title
+        ORDER BY avg_days DESC
+        LIMIT 5
+      `;
+      const timeResult = await db.query(timeQuery);
+      const timePerServiceData = timeResult.rows.map(row => ({
+        name: row.name,
+        avgDays: parseFloat(row.avg_days) || 0
+      }));
+
       return {
         kpis: kpi,
         revenueData,
         serviceMixData,
         techPerformanceData,
-        recentTransactions
+        recentTransactions,
+        timePerServiceData
       };
     } catch (error) {
       console.error('Erro no modelo Financeiro:', error);
