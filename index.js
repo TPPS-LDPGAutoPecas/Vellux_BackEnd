@@ -36,3 +36,4 @@ app.use('/api/appointments', require('./routes/agendamentoRoutes'));
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/finance', require('./routes/financeRoutes'));
