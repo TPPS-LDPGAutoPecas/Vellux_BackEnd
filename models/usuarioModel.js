@@ -13,13 +13,13 @@ class UsuarioModel {
    * @param {string} role Papel do usuário.
    * @returns {Promise<Object>} Retorna o objeto do usuário recém-criado.
    */
-  static async criarUsuario(displayName, email, passwordHash, role) {
+  static async criarUsuario(displayName, email, passwordHash, phone, role) {
     const query = `
-      INSERT INTO users (display_name, email, password_hash, role)
-      VALUES ($1, $2, $3, $4::user_role)
-      RETURNING id, display_name, email, role, created_at;
+      INSERT INTO users (display_name, email, password_hash, phone_number, role)
+      VALUES ($1, $2, $3, $4, $5::user_role)
+      RETURNING id, display_name, email, phone_number, role, created_at;
     `;
-    const values = [displayName, email, passwordHash, role];
+    const values = [displayName, email, passwordHash, phone, role];
     
     const result = await db.query(query, values);
     return result.rows[0];
