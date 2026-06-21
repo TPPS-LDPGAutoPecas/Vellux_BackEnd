@@ -19,6 +19,7 @@ class UsuarioController {
       const displayName = req.body.display_name || req.body.nome || req.body.nomeCompleto;
       const email = req.body.email;
       const password = req.body.password || req.body.senha;
+      const phone = req.body.phoneNumber;
       const role = CONFIG.DEFAULT_CLIENT_ROLE;
 
       if (!displayName || !email || !password) {
@@ -31,6 +32,7 @@ class UsuarioController {
         displayName, 
         email, 
         passwordHash, 
+        phone,
         role
       );
       
