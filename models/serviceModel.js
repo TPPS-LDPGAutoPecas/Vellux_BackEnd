@@ -78,6 +78,7 @@ class ServiceModel {
         v.plate,
         s.title as type,
         s.status,
+        s.scheduled_date as date,
         TO_CHAR(s.start_date, 'DD/MM/YYYY HH24:MI') as "startTime",
         s.description as diagnostics,
         COALESCE((

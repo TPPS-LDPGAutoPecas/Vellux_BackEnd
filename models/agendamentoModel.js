@@ -45,11 +45,13 @@ class AgendamentoModel {
         u.display_name as client, 
         v.make || ' ' || v.model as car, 
         v.plate, 
-        a.scheduled_date as date
+        a.scheduled_date as date,
+        a.service_type
       FROM appointments a
       JOIN users u ON a.client_id = u.id
       JOIN vehicles v ON a.vehicle_id = v.id
       WHERE a.id NOT IN (SELECT appointment_id FROM services WHERE appointment_id IS NOT NULL)
+      AND a.status = 'confirmed'
       ORDER BY a.scheduled_date ASC;
     `;
     const result = await db.query(query);
