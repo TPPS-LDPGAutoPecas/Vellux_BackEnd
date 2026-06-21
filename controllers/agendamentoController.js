@@ -19,34 +19,17 @@ class AgendamentoController {
       const dataHoraInicio = new Date(`${date}T${time}:00-03:00`);
       const dataHoraFim = new Date(dataHoraInicio.getTime() + 2 * 60 * 60 * 1000);
 
-      const resumoGoogle = `Vellux Motors - ${service_type}`;
-      
-      let descricaoGoogle = `🔧 Serviço: ${service_type}\n`;
-      descricaoGoogle += `👤 Cliente: ${detalhes.display_name}\n`;
-      descricaoGoogle += `🚗 Veículo: ${detalhes.make} ${detalhes.model} (Placa: ${detalhes.plate})\n`;
-      
-      if (notes) {
-          descricaoGoogle += `\n📝 Observações do Cliente: ${notes}`;
-      }
-
-      const googleCalendarId = await GoogleCalendarService.criarAgendamento(
-        resumoGoogle,
-        descricaoGoogle,
-        dataHoraInicio.toISOString(),
-        dataHoraFim.toISOString()
-      );
-
       const agendamento = await AgendamentoModel.criarAgendamento(
         client_id,
         vehicle_id,
         dataHoraInicio.toISOString(),
         service_type,
         notes, 
-        googleCalendarId
+        null // Não tem Google Calendar ID ainda
       );
 
       return res.status(201).json({
-        mensagem: 'Agendamento confirmado com sucesso!',
+        mensagem: 'Solicitação de agendamento enviada com sucesso!',
         agendamento
       });
 
@@ -103,6 +86,16 @@ class AgendamentoController {
     }
   }
 
+  static async listarSolicitacoesAdmin(req, res) {
+    try {
+      const solicitacoes = await AgendamentoModel.listarSolicitacoes();
+      return res.status(200).json(solicitacoes);
+    } catch (error) {
+      console.error('[ERRO LISTAR SOLICITACOES]', error);
+      return res.status(500).json({ erro: 'Erro interno ao listar solicitações.' });
+    }
+  }
+
   static async buscarHorariosDisponiveis(req, res) {
     try {
       const { date } = req.query; // YYYY-MM-DD
@@ -148,6 +141,84 @@ class AgendamentoController {
     } catch (error) {
       console.error('[ERRO BUSCAR HORARIOS]', error);
       return res.status(500).json({ erro: 'Erro interno ao buscar horários.' });
+    }
+  }
+  static async aprovarServico(req, res) {
+    try {
+      const { id } = req.params;
+      const agendamento = await AgendamentoModel.buscarPorId(id);
+
+      if (!agendamento) {
+        return res.status(404).json({ erro: 'Agendamento não encontrado.' });
+      }
+
+      if (agendamento.status !== 'requested') {
+        return res.status(400).json({ erro: 'Apenas agendamentos solicitados podem ser aprovados.' });
+      }
+
+      const detalhes = await AgendamentoModel.obterDetalhes(agendamento.client_id, agendamento.vehicle_id);
+
+      const dataHoraInicio = new Date(agendamento.scheduled_date);
+      const dataHoraFim = new Date(dataHoraInicio.getTime() + 2 * 60 * 60 * 1000);
+
+      const resumoGoogle = `Vellux Motors - ${agendamento.service_type}`;
+      
+      let descricaoGoogle = `🔧 Serviço: ${agendamento.service_type}\n`;
+      descricaoGoogle += `👤 Cliente: ${detalhes.display_name}\n`;
+      descricaoGoogle += `🚗 Veículo: ${detalhes.make} ${detalhes.model} (Placa: ${detalhes.plate})\n`;
+      
+      if (agendamento.notes) {
+          descricaoGoogle += `\n📝 Observações do Cliente: ${agendamento.notes}`;
+      }
+
+      const googleCalendarId = await GoogleCalendarService.criarAgendamento(
+        resumoGoogle,
+        descricaoGoogle,
+        dataHoraInicio.toISOString(),
+        dataHoraFim.toISOString()
+      );
+
+      const atualizado = await AgendamentoModel.atualizarStatus(id, 'confirmed', null, googleCalendarId);
+
+      return res.status(200).json({ mensagem: 'Agendamento aprovado com sucesso.', agendamento: atualizado });
+    } catch (error) {
+      console.error('[ERRO APROVAR SERVICO]', error);
+      return res.status(500).json({ erro: 'Erro interno ao aprovar agendamento.' });
+    }
+  }
+
+  static async rejeitarServico(req, res) {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+
+      if (!reason) {
+        return res.status(400).json({ erro: 'Motivo da recusa é obrigatório.' });
+      }
+
+      const agendamento = await AgendamentoModel.buscarPorId(id);
+
+      if (!agendamento) {
+        return res.status(404).json({ erro: 'Agendamento não encontrado.' });
+      }
+
+      const atualizado = await AgendamentoModel.atualizarStatus(id, 'rejected', reason, null);
+
+      return res.status(200).json({ mensagem: 'Agendamento rejeitado.', agendamento: atualizado });
+    } catch (error) {
+      console.error('[ERRO REJEITAR SERVICO]', error);
+      return res.status(500).json({ erro: 'Erro interno ao rejeitar agendamento.' });
+    }
+  }
+
+  static async listarPorCliente(req, res) {
+    try {
+      const client_id = req.usuarioLogado.id;
+      const agendamentos = await AgendamentoModel.listarPorCliente(client_id);
+      return res.status(200).json(agendamentos);
+    } catch (error) {
+      console.error('[ERRO LISTAR POR CLIENTE]', error);
+      return res.status(500).json({ erro: 'Erro interno ao listar agendamentos do cliente.' });
     }
   }
 }

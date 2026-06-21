@@ -56,15 +56,77 @@ class AgendamentoModel {
     return result.rows;
   }
 
+  static async listarSolicitacoes() {
+    const query = `
+      SELECT 
+        a.id, 
+        u.display_name as client, 
+        v.make || ' ' || v.model as car, 
+        v.plate, 
+        a.scheduled_date as date,
+        a.service_type,
+        a.notes
+      FROM appointments a
+      JOIN users u ON a.client_id = u.id
+      JOIN vehicles v ON a.vehicle_id = v.id
+      WHERE a.status = 'requested'
+      ORDER BY a.scheduled_date ASC;
+    `;
+    const result = await db.query(query);
+    return result.rows;
+  }
+
   static async buscarPorData(dateString) {
-    // Busca agendamentos em uma data específica ignorando os cancelados
+    // Busca agendamentos em uma data específica ignorando os cancelados e rejeitados
     const query = `
       SELECT scheduled_date 
       FROM appointments 
       WHERE DATE(scheduled_date) = $1 
-      AND status != 'cancelled';
+      AND status NOT IN ('cancelled', 'rejected');
     `;
     const result = await db.query(query, [dateString]);
+    return result.rows;
+  }
+
+  static async atualizarStatus(id, status, rejectionReason = null, googleCalendarId = null) {
+    let query = 'UPDATE appointments SET status = $1';
+    const values = [status, parseInt(id, 10)];
+    let paramIndex = 3;
+
+    if (rejectionReason !== null) {
+      query += `, rejection_reason = $${paramIndex}`;
+      values.push(rejectionReason);
+      paramIndex++;
+    }
+
+    if (googleCalendarId !== null) {
+      query += `, google_calendar_id = $${paramIndex}`;
+      values.push(googleCalendarId);
+      paramIndex++;
+    }
+
+    query += ' WHERE id = $2 RETURNING *';
+
+    const result = await db.query(query, values);
+    return result.rows[0];
+  }
+
+  static async listarPorCliente(clientId) {
+    const query = `
+      SELECT 
+        a.id, 
+        v.make || ' ' || v.model as car, 
+        v.plate, 
+        a.scheduled_date as date,
+        a.service_type,
+        a.status,
+        a.rejection_reason
+      FROM appointments a
+      JOIN vehicles v ON a.vehicle_id = v.id
+      WHERE a.client_id = $1
+      ORDER BY a.scheduled_date DESC;
+    `;
+    const result = await db.query(query, [parseInt(clientId, 10)]);
     return result.rows;
   }
 }

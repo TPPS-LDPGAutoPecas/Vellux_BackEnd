@@ -59,21 +59,19 @@ describe('Testes parametrizados - Agendamentos', () => {
         model: 'Civic',
         plate: 'ABC1234'
       });
-      
-      GoogleCalendarService.criarAgendamento.mockResolvedValue('google_id_123');
       AgendamentoModel.criarAgendamento.mockResolvedValue({
         id: 1,
         ...payload,
         client_id: 1,
-        google_calendar_id: 'google_id_123'
+        google_calendar_id: null
       });
 
       const res = await request(app).post('/api/appointments').send(payload);
 
       expect(res.status).toBe(201);
-      expect(res.body.mensagem).toBe('Agendamento confirmado com sucesso!');
+      expect(res.body.mensagem).toBe('Solicitação de agendamento enviada com sucesso!');
       expect(AgendamentoModel.obterDetalhes).toHaveBeenCalledWith(1, 1);
-      expect(GoogleCalendarService.criarAgendamento).toHaveBeenCalled();
+      expect(GoogleCalendarService.criarAgendamento).not.toHaveBeenCalled();
       expect(AgendamentoModel.criarAgendamento).toHaveBeenCalled();
     });
   });

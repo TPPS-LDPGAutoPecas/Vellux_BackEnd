@@ -79,17 +79,29 @@ router.delete('/:id', AuthMiddleware.verificarAcesso(['client', 'admin']), Agend
  * @swagger
  * /api/appointments/admin/pendentes:
  *   get:
- *     summary: Lista agendamentos recentes que não viraram serviço ainda
+ *     summary: Lista agendamentos que ainda não viraram serviços
  *     tags: [Agendamentos]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de agendamentos pendentes
- *       401:
- *         description: Não autorizado
  */
 router.get('/admin/pendentes', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), AgendamentoController.listarPendentesAdmin);
+
+/**
+ * @swagger
+ * /api/appointments/admin/requests:
+ *   get:
+ *     summary: Lista agendamentos aguardando aprovação (Admin)
+ *     tags: [Agendamentos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de agendamentos pendentes de aprovação
+ */
+router.get('/admin/requests', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), AgendamentoController.listarSolicitacoesAdmin);
 
 /**
  * @swagger
@@ -113,5 +125,68 @@ router.get('/admin/pendentes', AuthMiddleware.verificarAcesso(['admin', 'mechani
  *         description: Data não informada
  */
 router.get('/available-slots', AuthMiddleware.verificarAcesso(['client', 'admin']), AgendamentoController.buscarHorariosDisponiveis);
+
+/**
+ * @swagger
+ * /api/appointments/{id}/approve:
+ *   put:
+ *     summary: Aprova uma solicitação de agendamento (Admin)
+ *     tags: [Agendamentos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Agendamento aprovado com sucesso
+ */
+router.put('/:id/approve', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), AgendamentoController.aprovarServico);
+
+/**
+ * @swagger
+ * /api/appointments/{id}/reject:
+ *   put:
+ *     summary: Rejeita uma solicitação de agendamento (Admin)
+ *     tags: [Agendamentos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Agendamento rejeitado com sucesso
+ */
+router.put('/:id/reject', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), AgendamentoController.rejeitarServico);
+
+/**
+ * @swagger
+ * /api/appointments/client:
+ *   get:
+ *     summary: Lista os agendamentos do cliente logado
+ *     tags: [Agendamentos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de agendamentos do cliente
+ */
+router.get('/client', AuthMiddleware.verificarAcesso(['client', 'admin']), AgendamentoController.listarPorCliente);
 
 module.exports = router;
