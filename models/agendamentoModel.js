@@ -55,6 +55,18 @@ class AgendamentoModel {
     const result = await db.query(query);
     return result.rows;
   }
+
+  static async buscarPorData(dateString) {
+    // Busca agendamentos em uma data específica ignorando os cancelados
+    const query = `
+      SELECT scheduled_date 
+      FROM appointments 
+      WHERE DATE(scheduled_date) = $1 
+      AND status != 'cancelled';
+    `;
+    const result = await db.query(query, [dateString]);
+    return result.rows;
+  }
 }
 
 module.exports = AgendamentoModel;

@@ -91,4 +91,27 @@ router.delete('/:id', AuthMiddleware.verificarAcesso(['client', 'admin']), Agend
  */
 router.get('/admin/pendentes', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), AgendamentoController.listarPendentesAdmin);
 
+/**
+ * @swagger
+ * /api/appointments/available-slots:
+ *   get:
+ *     summary: Lista horários disponíveis para uma data
+ *     tags: [Agendamentos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Data no formato YYYY-MM-DD
+ *     responses:
+ *       200:
+ *         description: Lista de horários disponíveis
+ *       400:
+ *         description: Data não informada
+ */
+router.get('/available-slots', AuthMiddleware.verificarAcesso(['client', 'admin']), AgendamentoController.buscarHorariosDisponiveis);
+
 module.exports = router;

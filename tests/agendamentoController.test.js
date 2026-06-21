@@ -152,4 +152,42 @@ describe('Testes parametrizados - Agendamentos', () => {
     });
   });
 
+  describe('GET /api/appointments/available-slots', () => {
+    test('Deve retornar 400 se data não for informada', async () => {
+      const res = await request(app).get('/api/appointments/available-slots');
+      expect(res.status).toBe(400);
+      expect(res.body.erro).toBe('Data não informada.');
+    });
+
+    test('Deve retornar 200 com horários disponíveis (nenhum agendamento prévio)', async () => {
+      AgendamentoModel.buscarPorData.mockResolvedValue([]);
+      
+      // Simulando uma data no futuro
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 10);
+      const dateString = futureDate.toISOString().split('T')[0];
+
+      const res = await request(app).get(`/api/appointments/available-slots?date=${dateString}`);
+      
+      expect(res.status).toBe(200);
+      expect(res.body.slots).toEqual(['08:00', '10:00', '13:30', '15:00', '17:30']);
+      expect(AgendamentoModel.buscarPorData).toHaveBeenCalledWith(dateString);
+    });
+
+    test('Deve subtrair horários já agendados do retorno', async () => {
+      AgendamentoModel.buscarPorData.mockResolvedValue([
+        { scheduled_date: '2026-05-15T10:00:00-03:00' },
+        { scheduled_date: '2026-05-15T15:00:00-03:00' }
+      ]);
+      
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 10);
+      const dateString = futureDate.toISOString().split('T')[0];
+
+      const res = await request(app).get(`/api/appointments/available-slots?date=${dateString}`);
+      
+      expect(res.status).toBe(200);
+      expect(res.body.slots).toEqual(['08:00', '13:30', '17:30']);
+    });
+  });
 });

@@ -102,6 +102,54 @@ class AgendamentoController {
       return res.status(500).json({ erro: 'Erro interno ao listar agendamentos pendentes.' });
     }
   }
+
+  static async buscarHorariosDisponiveis(req, res) {
+    try {
+      const { date } = req.query; // YYYY-MM-DD
+      
+      if (!date) {
+        return res.status(400).json({ erro: 'Data não informada.' });
+      }
+
+      const appointments = await AgendamentoModel.buscarPorData(date);
+      
+      const GRADE_HORARIOS = ['08:00', '10:00', '13:30', '15:00', '17:30'];
+      
+      // Get booked times (in 'HH:MM' format)
+      const bookedTimes = appointments.map(app => {
+        const d = new Date(app.scheduled_date);
+        return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+      });
+
+      // Filter available times
+      let availableSlots = GRADE_HORARIOS.filter(slot => !bookedTimes.includes(slot));
+
+      // Se a data solicitada for hoje, bloquear os horários que já passaram
+      const today = new Date();
+      const reqDate = new Date(date + 'T00:00:00-03:00'); // Considerar fuso local ou o mesmo do timezone do app
+      
+      if (
+        reqDate.getFullYear() === today.getFullYear() &&
+        reqDate.getMonth() === today.getMonth() &&
+        reqDate.getDate() === today.getDate()
+      ) {
+        const nowHour = today.getHours();
+        const nowMinute = today.getMinutes();
+        
+        availableSlots = availableSlots.filter(slot => {
+          const [h, m] = slot.split(':').map(Number);
+          if (h > nowHour) return true;
+          if (h === nowHour && m > nowMinute) return true;
+          return false;
+        });
+      }
+
+      return res.status(200).json({ slots: availableSlots });
+    } catch (error) {
+      console.error('[ERRO BUSCAR HORARIOS]', error);
+      return res.status(500).json({ erro: 'Erro interno ao buscar horários.' });
+    }
+  }
 }
 
 module.exports = AgendamentoController;
