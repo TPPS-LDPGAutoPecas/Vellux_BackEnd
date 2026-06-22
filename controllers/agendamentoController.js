@@ -16,13 +16,12 @@ class AgendamentoController {
           return res.status(404).json({ erro: 'Cliente ou veículo não encontrado no sistema.' });
       }
 
-      const dataHoraInicio = new Date(`${date}T${time}:00-03:00`);
-      const dataHoraFim = new Date(dataHoraInicio.getTime() + 2 * 60 * 60 * 1000);
+      const scheduledDateStr = `${date} ${time}:00`;
 
       const agendamento = await AgendamentoModel.criarAgendamento(
         client_id,
         vehicle_id,
-        dataHoraInicio.toISOString(),
+        scheduledDateStr,
         service_type,
         notes, 
         null // Não tem Google Calendar ID ainda
