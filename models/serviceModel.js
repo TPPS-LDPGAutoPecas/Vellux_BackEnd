@@ -11,7 +11,7 @@ class ServiceModel {
           s.title,
           s.description,
           s.status,
-          s.scheduled_date AT TIME ZONE 'UTC' as "scheduledDate",
+          s.scheduled_date AT TIME ZONE 'America/Sao_Paulo' as "scheduledDate",
           s.start_date AT TIME ZONE 'UTC' as "startDate",
           s.expected_delivery AT TIME ZONE 'UTC' as "expectedDelivery",
           s.finished_at AT TIME ZONE 'UTC' as "endDate",
@@ -78,7 +78,7 @@ class ServiceModel {
         v.plate,
         s.title as type,
         s.status,
-        s.scheduled_date as date,
+        s.scheduled_date AT TIME ZONE 'America/Sao_Paulo' as date,
         TO_CHAR(s.start_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') as "startTime",
         s.description as diagnostics,
         COALESCE((
@@ -105,7 +105,7 @@ class ServiceModel {
         v.plate,
         s.title as type,
         s.status,
-        s.scheduled_date as date,
+        s.scheduled_date AT TIME ZONE 'America/Sao_Paulo' as date,
         TO_CHAR(s.start_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') as "startTime",
         s.description as diagnostics
       FROM services s

@@ -77,7 +77,7 @@ class OverviewModel {
       // 6. Agenda de Hoje
       const todayScheduleQuery = `
         SELECT 
-          to_char(a.scheduled_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI') as "time",
+          to_char(a.scheduled_date, 'HH24:MI') as "time",
           v.make || ' ' || v.model as "car",
           a.status
         FROM appointments a
