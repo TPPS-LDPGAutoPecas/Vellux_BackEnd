@@ -11,10 +11,10 @@ class ServiceModel {
           s.title,
           s.description,
           s.status,
-          s.scheduled_date as "scheduledDate",
-          s.start_date as "startDate",
-          s.expected_delivery as "expectedDelivery",
-          s.finished_at as "endDate",
+          s.scheduled_date AT TIME ZONE 'UTC' as "scheduledDate",
+          s.start_date AT TIME ZONE 'UTC' as "startDate",
+          s.expected_delivery AT TIME ZONE 'UTC' as "expectedDelivery",
+          s.finished_at AT TIME ZONE 'UTC' as "endDate",
           s.budget,
           COALESCE((
               SELECT json_agg(u.display_name)

@@ -45,7 +45,7 @@ class AgendamentoModel {
         u.display_name as client, 
         v.make || ' ' || v.model as car, 
         v.plate, 
-        a.scheduled_date as date,
+        a.scheduled_date AT TIME ZONE 'UTC' as date,
         a.service_type
       FROM appointments a
       JOIN users u ON a.client_id = u.id
@@ -65,7 +65,7 @@ class AgendamentoModel {
         u.display_name as client, 
         v.make || ' ' || v.model as car, 
         v.plate, 
-        a.scheduled_date as date,
+        a.scheduled_date AT TIME ZONE 'UTC' as date,
         a.service_type,
         a.notes
       FROM appointments a
@@ -119,7 +119,7 @@ class AgendamentoModel {
         a.id, 
         v.make || ' ' || v.model as car, 
         v.plate, 
-        a.scheduled_date as date,
+        a.scheduled_date AT TIME ZONE 'UTC' as date,
         a.service_type,
         a.status,
         a.rejection_reason
