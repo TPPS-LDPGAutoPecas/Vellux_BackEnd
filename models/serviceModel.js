@@ -79,7 +79,7 @@ class ServiceModel {
         s.title as type,
         s.status,
         s.scheduled_date as date,
-        TO_CHAR(s.start_date AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') as "startTime",
+        TO_CHAR(s.start_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') as "startTime",
         s.description as diagnostics,
         COALESCE((
             SELECT json_agg(u.display_name)
@@ -106,7 +106,7 @@ class ServiceModel {
         s.title as type,
         s.status,
         s.scheduled_date as date,
-        TO_CHAR(s.start_date AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') as "startTime",
+        TO_CHAR(s.start_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') as "startTime",
         s.description as diagnostics
       FROM services s
       JOIN users u ON u.id = s.client_id
