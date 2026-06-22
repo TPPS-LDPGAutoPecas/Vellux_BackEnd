@@ -112,6 +112,15 @@ class OverviewModel {
       const pendingTodayResult = await db.query(pendingTodayQuery);
       const pendingToday = Number(pendingTodayResult.rows[0].count);
 
+      // Count ALL pending requests
+      const pendingRequestsQuery = `
+        SELECT COUNT(*) as count 
+        FROM appointments 
+        WHERE status = 'requested';
+      `;
+      const pendingRequestsResult = await db.query(pendingRequestsQuery);
+      const pendingRequests = Number(pendingRequestsResult.rows[0].count);
+
       return {
         stats: {
           faturamentoMensal,
@@ -122,7 +131,8 @@ class OverviewModel {
         activeServices: activeServicesResult.rows,
         activeServicesTotal: activeServicesCount,
         todaySchedule: mappedSchedule,
-        pendingToday
+        pendingToday,
+        pendingRequests
       };
     } catch (error) {
       throw error;
