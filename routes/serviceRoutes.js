@@ -35,6 +35,20 @@ router.get('/admin', AuthMiddleware.verificarAcesso(['admin', 'mechanic']), Serv
 
 /**
  * @swagger
+ * /api/services/mechanic:
+ *   get:
+ *     summary: Lista os serviços ativos atribuídos ao mecânico logado
+ *     tags: [Serviços]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de serviços
+ */
+router.get('/mechanic', AuthMiddleware.verificarAcesso(['mechanic']), ServiceController.listarMeusServicosMecanico);
+
+/**
+ * @swagger
  * /api/services/checkin:
  *   post:
  *     summary: Faz o check-in de um agendamento criando um serviço

@@ -23,6 +23,17 @@ class ServiceController {
     }
   }
 
+  static async listarMeusServicosMecanico(req, res) {
+    try {
+      const mechanicId = req.usuarioLogado.id;
+      const servicos = await ServiceModel.listarParaMecanico(mechanicId);
+      return res.status(200).json(servicos);
+    } catch (err) {
+      console.error('Erro ao listar serviços para mecânico:', err);
+      return res.status(500).json({ erro: 'Erro interno ao listar serviços para mecânico' });
+    }
+  }
+
   static async fazerCheckin(req, res) {
     try {
       const { appointmentId, title, description } = req.body;

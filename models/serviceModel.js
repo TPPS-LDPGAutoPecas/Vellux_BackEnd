@@ -96,6 +96,29 @@ class ServiceModel {
     return result.rows;
   }
 
+  static async listarParaMecanico(mechanicId) {
+    const query = `
+      SELECT 
+        s.id,
+        u.display_name as client,
+        v.make || ' ' || v.model as car,
+        v.plate,
+        s.title as type,
+        s.status,
+        s.scheduled_date as date,
+        TO_CHAR(s.start_date, 'DD/MM/YYYY HH24:MI') as "startTime",
+        s.description as diagnostics
+      FROM services s
+      JOIN users u ON u.id = s.client_id
+      JOIN vehicles v ON v.id = s.vehicle_id
+      JOIN service_mechanics sm ON sm.service_id = s.id
+      WHERE sm.mechanic_id = $1 AND s.status IN ('in_progress', 'awaiting_parts')
+      ORDER BY s.start_date DESC;
+    `;
+    const result = await db.query(query, [mechanicId]);
+    return result.rows;
+  }
+
   static async fazerCheckin(appointmentId, title, description) {
     const query = `
       INSERT INTO services (vehicle_id, client_id, appointment_id, title, description, scheduled_date, status)
