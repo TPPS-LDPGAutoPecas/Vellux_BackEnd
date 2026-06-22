@@ -6,8 +6,10 @@ class GoogleCalendarService {
   // 1. Método para CRIAR o evento
   static async criarAgendamento(resumo, descricao, dataHoraInicio, dataHoraFim) {
     try {
-      const keyFilePath = process.env.NODE_ENV === 'production'
-        ? '/etc/secrets/google-credentials.json'
+      const fs = require('fs');
+      const secretPath = '/etc/secrets/google-credentials.json';
+      const keyFilePath = fs.existsSync(secretPath)
+        ? secretPath
         : path.join(__dirname, '../config/google-credentials.json');
 
       const auth = new google.auth.GoogleAuth({
@@ -39,8 +41,10 @@ class GoogleCalendarService {
   // 2. Método para ELIMINAR o evento
   static async cancelarAgendamento(googleCalendarId) {
     try {
-      const keyFilePath = process.env.NODE_ENV === 'production'
-        ? '/etc/secrets/google-credentials.json'
+      const fs = require('fs');
+      const secretPath = '/etc/secrets/google-credentials.json';
+      const keyFilePath = fs.existsSync(secretPath)
+        ? secretPath
         : path.join(__dirname, '../config/google-credentials.json');
 
       const auth = new google.auth.GoogleAuth({
