@@ -14,7 +14,7 @@ async function run() {
   try {
     await client.connect();
     console.log('Connected to Supabase Pooler DB');
-    const sql = fs.readFileSync(path.join(__dirname, '01-create-tables.sql'), 'utf8');
+    const sql = fs.readFileSync(path.join(__dirname, '02-alter-appointments.sql'), 'utf8');
     await client.query(sql);
     console.log('Tables created successfully!');
   } catch (err) {
