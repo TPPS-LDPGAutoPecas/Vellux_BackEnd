@@ -77,11 +77,12 @@ class OverviewModel {
       // 6. Agenda de Hoje
       const todayScheduleQuery = `
         SELECT 
-          to_char(a.scheduled_date, 'HH24:MI') as "time",
+          to_char(a.scheduled_date AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI') as "time",
           v.make || ' ' || v.model as "car",
           a.status
         FROM appointments a
         JOIN vehicles v ON a.vehicle_id = v.id
+        JOIN users u ON a.client_id = u.id
         WHERE date_trunc('day', a.scheduled_date) = date_trunc('day', CURRENT_DATE)
         ORDER BY a.scheduled_date ASC
         LIMIT 5;

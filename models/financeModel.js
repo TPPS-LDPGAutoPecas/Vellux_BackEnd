@@ -50,14 +50,14 @@ class FinanceModel {
 
       // 2. Revenue Chart (grouped by month or day based on range)
       // If year, group by month. If month/week, group by day.
-      let groupByFormat = "to_char(finished_at, 'DD/MM')";
+      let groupByFormat = "to_char(finished_at AT TIME ZONE 'America/Sao_Paulo', 'DD/MM')";
       if (range === 'year') {
-        groupByFormat = "to_char(finished_at, 'MM/YYYY')";
+        groupByFormat = "to_char(finished_at AT TIME ZONE 'America/Sao_Paulo', 'MM/YYYY')";
       } else if (range === 'custom' && startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
         if ((end - start) / (1000 * 60 * 60 * 24) > 60) {
-          groupByFormat = "to_char(finished_at, 'MM/YYYY')";
+          groupByFormat = "to_char(finished_at AT TIME ZONE 'America/Sao_Paulo', 'MM/YYYY')";
         }
       }
       
